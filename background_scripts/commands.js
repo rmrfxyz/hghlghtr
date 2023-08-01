@@ -18,6 +18,8 @@ const Commands = {
   },
 
   async loadKeyMappings(customKeyMappings) {
+
+    console.log(' ++++++ ', customKeyMappings)
     let key, command;
     this.keyToCommandRegistry = {};
     this.mapKeyRegistry = {};
@@ -386,6 +388,9 @@ const defaultKeyMappings = {
   // Misc
   "?": "showHelp",
   "gs": "toggleViewSource",
+
+  // Layers
+  "a": "Layer.activate",
 };
 
 // This is a mapping of: commandIdentifier => [description, options].
@@ -488,6 +493,8 @@ const commandDescriptions = {
 
   "Marks.activateCreateMode": ["Create a new mark", { noRepeat: true }],
   "Marks.activateGotoMode": ["Go to a mark", { noRepeat: true }],
+
+  "Layer.activate": ["Insert concept layers"]
 };
 
 globalThis.Commands = Commands;

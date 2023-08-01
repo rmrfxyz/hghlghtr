@@ -2,16 +2,19 @@
 <html>
   <head>
     <title>New Tab</title>
-    <script src="../lib/utils.js"></script>
-    <script src="../lib/keyboard_utils.js"></script>
-    <script src="../lib/dom_utils.js"></script>
-    <script src="../lib/rect.js"></script>
-    <script src="../lib/handler_stack.js"></script>
-    <script src="../content_scripts/ui_component.js"></script>
-    <script src="../content_scripts/vimium_frontend.js"></script>
+    <meta name="color-scheme" content="light dark">
+    <script type="text/javascript" src="../lib/utils.js"></script>
+    <script type="text/javascript" src="../lib/settings.js"></script>
+    <script type="text/javascript" src="../lib/keyboard_utils.js"></script>
+    <script type="text/javascript" src="../lib/dom_utils.js"></script>
+    <script type="text/javascript" src="../lib/handler_stack.js"></script>
+    <script type="text/javascript" src="ui_component_server.js"></script>
+    <script type="text/javascript" src="./layer.js"></script>
     <link rel="stylesheet" type="text/css" href="../content_scripts/vimium.css" />
-
   </head>
-  <body class="vimiumBody">
+  <body class="vimiumBody" style="background-color: red;">
+    <div>
+      <h1>layer 0</h1>
+    </div>
   </body>
 </html>
