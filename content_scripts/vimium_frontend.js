@@ -9,7 +9,7 @@ let normalMode = null;
 // We track whther the current window has the focus or not.
 const windowIsFocused = (function () {
   let windowHasFocus = null;
-  DomUtils.documentReady(() => windowHasFocus = document.hasFocus());
+  DomUtils.documentReady(() => (windowHasFocus = document.hasFocus()));
   window.addEventListener(
     "focus",
     forTrusted(function (event) {
@@ -18,7 +18,7 @@ const windowIsFocused = (function () {
       }
       return true;
     }),
-    true,
+    true
   );
   window.addEventListener(
     "blur",
@@ -28,7 +28,7 @@ const windowIsFocused = (function () {
       }
       return true;
     }),
-    true,
+    true
   );
   return () => windowHasFocus;
 })();
@@ -36,7 +36,10 @@ const windowIsFocused = (function () {
 // True if this window should be focusable by various Vim commands (e.g. "nextFrame").
 const isWindowFocusable = () => {
   // Avoid focusing tiny frames. See #1317.
-  return !DomUtils.windowIsTooSmall() && (document.body?.tagName.toLowerCase() != "frameset");
+  return (
+    !DomUtils.windowIsTooSmall() &&
+    document.body?.tagName.toLowerCase() != "frameset"
+  );
 };
 
 // This is set by initializeFrame. We can only get this frame's ID from the background page.
@@ -91,7 +94,7 @@ class GrabBackFocus extends Mode {
     // other frames detecting this. When one GrabBackFocus mode exits, we broadcast a message to
     // inform all GrabBackFocus modes that they should exit; see #2296.
     chrome.runtime.onMessage.addListener(
-      listener = ({ name }) => {
+      (listener = ({ name }) => {
         if (name === "userIsInteractingWithThePage") {
           chrome.runtime.onMessage.removeListener(listener);
           if (this.modeIsActive) {
@@ -100,7 +103,7 @@ class GrabBackFocus extends Mode {
         }
         // We will not be calling sendResponse.
         return false;
-      },
+      })
     );
   }
 
@@ -109,10 +112,12 @@ class GrabBackFocus extends Mode {
       return this.continueBubbling;
     }
 
-    if (!this.logged && (element !== document.body)) {
+    if (!this.logged && element !== document.body) {
       this.logged = true;
       if (!window.vimiumDomTestsAreRunning) {
-        console.log("An auto-focusing action on this page was blocked by Vimium.");
+        console.log(
+          "An auto-focusing action on this page was blocked by Vimium."
+        );
       }
     }
     element.blur();
@@ -137,14 +142,14 @@ handlerStack.push({
       // Often, a link which triggers a content load and url change with javascript will also have
       // the new url as it's href attribute.
       if (
-        (target.tagName === "A") &&
-        (target.origin === document.location.origin) &&
+        target.tagName === "A" &&
+        target.origin === document.location.origin &&
         // Clicking the link will change the url of this frame.
-        ((target.pathName !== document.location.pathName) ||
-          (target.search !== document.location.search)) &&
+        (target.pathName !== document.location.pathName ||
+          target.search !== document.location.search) &&
         (["", "_self"].includes(target.target) ||
-          ((target.target === "_parent") && (window.parent === window)) ||
-          ((target.target === "_top") && (window.top === window)))
+          (target.target === "_parent" && window.parent === window) ||
+          (target.target === "_top" && window.top === window))
       ) {
         return new GrabBackFocus();
       } else {
@@ -203,7 +208,10 @@ const initializePreDomReady = async function () {
       // TODO(philc): it seems to me that we should be able to get rid of this runInTopFrame
       // command, and instead use chrome.tabs.sendMessage with a frameId 0 from the background page.
       if (DomUtils.isTopFrame()) {
-        return NormalModeCommands[registryEntry.command](sourceFrameId, registryEntry);
+        return NormalModeCommands[registryEntry.command](
+          sourceFrameId,
+          registryEntry
+        );
       }
     },
     linkHintsMessage(request, sender) {
@@ -228,20 +236,23 @@ const initializePreDomReady = async function () {
         Utils.debugLog(
           "frontend.js: onMessage:%otype:%o",
           request.handler,
-          request.messageType,
+          request.messageType
           // request // Often useful for debugging.
         );
       }
       request.isTrusted = true;
       // Some request are handled elsewhere; ignore them.
-      const shouldHandleMessage = request.handler !== "userIsInteractingWithThePage" &&
+      const shouldHandleMessage =
+        request.handler !== "userIsInteractingWithThePage" &&
         (isEnabledForUrl ||
-          ["checkEnabledAfterURLChange", "runInTopFrame"].includes(request.handler));
+          ["checkEnabledAfterURLChange", "runInTopFrame"].includes(
+            request.handler
+          ));
       const result = shouldHandleMessage
         ? await requestHandlers[request.handler](request, sender)
         : null;
       return result;
-    },
+    }
   );
 };
 
@@ -257,7 +268,9 @@ const installListener = (element, event, callback) => {
     event,
     forTrusted(function () {
       if (extensionHasBeenUnloaded()) {
-        console.log("Vimium extension has been unloaded. Unloading content script.");
+        console.log(
+          "Vimium extension has been unloaded. Unloading content script."
+        );
         onUnload();
         return;
       }
@@ -267,7 +280,7 @@ const installListener = (element, event, callback) => {
         return true;
       }
     }),
-    true,
+    true
   );
 };
 
@@ -278,14 +291,23 @@ const installListener = (element, event, callback) => {
 const installListeners = Utils.makeIdempotent(function () {
   // Key event handlers fire on window before they do on document. Prefer window for key events so
   // the page can't set handlers to grab the keys before us.
-  const events = ["keydown", "keypress", "keyup", "click", "focus", "blur", "mousedown", "scroll"];
+  const events = [
+    "keydown",
+    "keypress",
+    "keyup",
+    "click",
+    "focus",
+    "blur",
+    "mousedown",
+    "scroll",
+  ];
   for (const type of events) {
-    installListener(window, type, (event) => handlerStack.bubbleEvent(type, event));
+    installListener(window, type, (event) =>
+      handlerStack.bubbleEvent(type, event)
+    );
   }
-  installListener(
-    document,
-    "DOMActivate",
-    (event) => handlerStack.bubbleEvent("DOMActivate", event),
+  installListener(document, "DOMActivate", (event) =>
+    handlerStack.bubbleEvent("DOMActivate", event)
   );
 });
 
@@ -320,7 +342,7 @@ const setScrollPosition = ({ scrollX, scrollY }) =>
       Utils.nextTick(function () {
         window.focus();
         document.body.focus();
-        if ((scrollX > 0) || (scrollY > 0)) {
+        if (scrollX > 0 || scrollY > 0) {
           Marks.setPreviousPosition();
           window.scrollTo(scrollX, scrollY);
         }
@@ -386,7 +408,7 @@ globalThis.lastFocusedInput = (function () {
         recentlyFocusedElement = event.target;
       }
     }),
-    true,
+    true
   );
   return () => recentlyFocusedElement;
 })();
@@ -460,16 +482,18 @@ if (globalThis.HelpDialog == null) {
           this.helpUI = new UIComponent(
             "pages/help_dialog.html",
             "vimiumHelpDialogFrame",
-            function () {},
+            function () {}
           );
         }
         return this.helpUI;
       });
 
-      if ((this.helpUI != null) && this.isShowing()) {
+      if (this.helpUI != null && this.isShowing()) {
         return this.helpUI.hide();
       } else if (this.helpUI != null) {
-        return this.helpUI.activate(Object.assign(request, { name: "activate", focus: true }));
+        return this.helpUI.activate(
+          Object.assign(request, { name: "activate", focus: true })
+        );
       }
     },
   };
