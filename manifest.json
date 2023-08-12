@@ -47,6 +47,8 @@
         "lib/handler_stack.js",
         "lib/settings.js",
         "lib/find_mode_history.js",
+        "lib/pyodide/pyodide.js",
+        "lib/pyscript.js",
         "content_scripts/mode.js",
         "content_scripts/ui_component.js",
         "content_scripts/link_hints.js",
@@ -107,5 +109,8 @@
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  }
 }
