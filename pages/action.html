@@ -5,6 +5,7 @@
   <link rel="stylesheet" type="text/css" href="options.css">
   <link rel="stylesheet" type="text/css" href="action.css">
   <link rel="stylesheet" type="text/css" href="../content_scripts/vimium.css">
+  <link rel="stylesheet" type="text/css" href="../lib/pyscript/pyscript.css">
 
   <script src="../lib/utils.js"></script>
   <script src="../lib/dom_utils.js"></script>
@@ -12,9 +13,32 @@
 
   <script src="exclusion_rules_editor.js"></script>
   <script src="action.js"></script>
+
+  <script defer src="../lib/pyscript/pyscript.js"></script>
 </head>
 
 <body class="vimiumBody">
+  <py-config>
+    [splashscreen]
+    autoclose = true
+  
+    [[interpreters]]
+    src = "/lib/pyodide/pyodide.js"
+    name = "pyodide-0.21.2"
+    lang = "python"
+  </py-config>
+  
+  <section class="pyscript">
+    Hello world! <br />
+    This is the current date and time, as computed by Python:
+    <py-script>
+        from datetime import datetime
+        now = datetime.now()
+        display(now.strftime("%m/%d/%Y, %H:%M:%S"))
+    </py-script>
+
+    <py-repl></py-repl>
+</section>
 
   <div id="vimiumNotEnabledMessage" style="display:none">
     <p>

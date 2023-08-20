@@ -3,7 +3,11 @@
   "name": "Vimium",
   "version": "2.0.0",
   "description": "The Hacker's Browser. Vimium provides keyboard shortcuts for navigation and control in the spirit of Vim.",
-  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "minimum_chrome_version": "102.0",
   "background": {
     "service_worker": "background_scripts/background.js",
@@ -43,10 +47,12 @@
         "lib/handler_stack.js",
         "lib/settings.js",
         "lib/find_mode_history.js",
+        "lib/pyodide/pyodide.js",
         "content_scripts/mode.js",
         "content_scripts/ui_component.js",
         "content_scripts/link_hints.js",
         "content_scripts/vomnibar.js",
+        "content_scripts/layer.js",
         "content_scripts/scroller.js",
         "content_scripts/marks.js",
         "content_scripts/mode_insert.js",
@@ -97,9 +103,21 @@
         // This allows one to script the reloading of Vimium.
         // This should only be enabled in development.
         // "pages/reload.html",
-        "_favicon/*"
+        "_favicon/*",
+        "pages/layer.html",
+        "lib/pyodide/pyodide.js",
+        "lib/pyodide/pyodide.asm.js",
+        "lib/pyodide/pyodide.asm.wasm",
+        "lib/pyodide/python_stdlib.zip",
+        "lib/pyodide/repodata.json",
+        "lib/pyodide/packaging-23.0-py3-none-any.whl",
+        "lib/pyodide/micropip-0.4.0-py3-none-any.whl",
+        "lib/pyscript/pyscript.js"
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  }
 }

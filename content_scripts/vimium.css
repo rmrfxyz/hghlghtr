@@ -412,6 +412,22 @@ iframe.vomnibarFrame {
   z-index: 2139999998; /* Two less than the reference value. */
 }
 
+iframe.layerFrame {
+  background-color: transparent;
+  padding: 0px;
+  overflow: hidden;
+
+  display: block;
+  position: fixed;
+  min-width: 400px;
+  top: 70px;
+  left: 50%;
+  margin: 0 0 0 -40%;
+  border: none;
+  font-family: sans-serif;
+  z-index: 2139999998; 
+}
+
 div.vimiumFlash {
   box-shadow: 0px 0px 4px 2px #4183C4;
   padding: 1px;

@@ -7,7 +7,9 @@ const Commands = {
     await Settings.onLoaded();
     for (let command of Object.keys(commandDescriptions)) {
       const [description, options] = commandDescriptions[command];
-      this.availableCommands[command] = Object.assign(options || {}, { description });
+      this.availableCommands[command] = Object.assign(options || {}, {
+        description,
+      });
     }
 
     Settings.addEventListener("change", async () => {
@@ -22,8 +24,8 @@ const Commands = {
     this.keyToCommandRegistry = {};
     this.mapKeyRegistry = {};
 
-    const configLines = Object.keys(defaultKeyMappings).map((key) =>
-      `map ${key} ${defaultKeyMappings[key]}`
+    const configLines = Object.keys(defaultKeyMappings).map(
+      (key) => `map ${key} ${defaultKeyMappings[key]}`
     );
     configLines.push(...BgUtils.parseLines(customKeyMappings));
 
@@ -33,19 +35,25 @@ const Commands = {
       const tokens = line.split(/\s+/);
       switch (tokens[0].toLowerCase()) {
         case "map":
-          if ((3 <= tokens.length) && !unmapAll) {
+          if (3 <= tokens.length && !unmapAll) {
             var _, optionList, registryEntry;
             [_, key, command, ...optionList] = tokens;
-            if (!seen[key] && (registryEntry = this.availableCommands[command])) {
+            if (
+              !seen[key] &&
+              (registryEntry = this.availableCommands[command])
+            ) {
               seen[key] = true;
               const keySequence = this.parseKeySequence(key);
               const options = this.parseCommandOptions(command, optionList);
-              this.keyToCommandRegistry[key] = Object.assign({
-                keySequence,
-                command,
-                options,
-                optionList,
-              }, this.availableCommands[command]);
+              this.keyToCommandRegistry[key] = Object.assign(
+                {
+                  keySequence,
+                  command,
+                  options,
+                  optionList,
+                },
+                this.availableCommands[command]
+              );
             }
           }
           break;
@@ -62,7 +70,8 @@ const Commands = {
             const fromChar = this.parseKeySequence(tokens[1]);
             const toChar = this.parseKeySequence(tokens[2]);
             if (
-              (fromChar.length === toChar.length && toChar.length === 1) &&
+              fromChar.length === toChar.length &&
+              toChar.length === 1 &&
               this.mapKeyRegistry[fromChar[0]] == null
             ) {
               this.mapKeyRegistry[fromChar[0]] = toChar[0];
@@ -80,8 +89,9 @@ const Commands = {
     // insert mode. We exclude single-key mappings (that is, printable keys) because when users
     // press printable keys in insert mode they expect the character to be input, not to be droppped
     // into some special Vimium mode.
-    const passNextKeys = Object.entries(this.keyToCommandRegistry)
-      .filter((key, v) => key.length > 1 && v.command == "passNextKeys");
+    const passNextKeys = Object.entries(this.keyToCommandRegistry).filter(
+      (key, v) => key.length > 1 && v.command == "passNextKeys"
+    );
     await chrome.storage.session.set({ passNextKeyKeys: passNextKeys });
   },
 
@@ -98,7 +108,10 @@ const Commands = {
     const modifier = "(?:[acms]-)"; // E.g. "a-", "c-", "m-", "s-".
     const namedKey = "(?:[a-z][a-z0-9]+)"; // E.g. "left" or "f12" (always two characters or more).
     const modifiedKey = `(?:${modifier}+(?:.|${namedKey}))`; // E.g. "c-*" or "c-left".
-    const specialKeyRegexp = new RegExp(`^<(${namedKey}|${modifiedKey})>(.*)`, "i");
+    const specialKeyRegexp = new RegExp(
+      `^<(${namedKey}|${modifiedKey})>(.*)`,
+      "i"
+    );
     return function (key) {
       if (key.length === 0) {
         return [];
@@ -153,14 +166,17 @@ const Commands = {
       let currentMapping = keyStateMapping;
       for (let index = 0; index < registryEntry.keySequence.length; index++) {
         const key = registryEntry.keySequence[index];
-        if (currentMapping[key] != null ? currentMapping[key].command : undefined) {
+        if (
+          currentMapping[key] != null ? currentMapping[key].command : undefined
+        ) {
           // Do not overwrite existing command bindings, they take priority. NOTE(smblott) This is
           // the legacy behaviour.
           break;
-        } else if (index < (registryEntry.keySequence.length - 1)) {
-          currentMapping = currentMapping[key] != null
-            ? currentMapping[key]
-            : (currentMapping[key] = {});
+        } else if (index < registryEntry.keySequence.length - 1) {
+          currentMapping =
+            currentMapping[key] != null
+              ? currentMapping[key]
+              : (currentMapping[key] = {});
         } else {
           currentMapping[key] = Object.assign({}, registryEntry);
           // We don't need these properties in the content scripts.
@@ -186,7 +202,8 @@ const Commands = {
       const registryEntry = this.keyToCommandRegistry[key];
       (commandToKey[registryEntry.command] != null
         ? commandToKey[registryEntry.command]
-        : (commandToKey[registryEntry.command] = [])).push(key);
+        : (commandToKey[registryEntry.command] = [])
+      ).push(key);
     }
     const commandGroups = {};
     for (let group of Object.keys(this.commandGroups || {})) {
@@ -275,7 +292,7 @@ const Commands = {
       "moveTabLeft",
       "moveTabRight",
     ],
-    misc: ["showHelp", "toggleViewSource"],
+    misc: ["showHelp", "toggleViewSource", "Layer.activate"],
   },
 
   // Rarely used commands are not shown by default in the help dialog or in the README. The goal is
@@ -310,82 +327,85 @@ const Commands = {
 
 const defaultKeyMappings = {
   // Navigating the current page
-  "j": "scrollDown",
-  "k": "scrollUp",
-  "h": "scrollLeft",
-  "l": "scrollRight",
-  "gg": "scrollToTop",
-  "G": "scrollToBottom",
-  "zH": "scrollToLeft",
-  "zL": "scrollToRight",
+  j: "scrollDown",
+  k: "scrollUp",
+  h: "scrollLeft",
+  l: "scrollRight",
+  gg: "scrollToTop",
+  G: "scrollToBottom",
+  zH: "scrollToLeft",
+  zL: "scrollToRight",
   "<c-e>": "scrollDown",
   "<c-y>": "scrollUp",
-  "d": "scrollPageDown",
-  "u": "scrollPageUp",
-  "r": "reload",
-  "yy": "copyCurrentUrl",
-  "p": "openCopiedUrlInCurrentTab",
-  "P": "openCopiedUrlInNewTab",
-  "gi": "focusInput",
+  d: "scrollPageDown",
+  u: "scrollPageUp",
+  r: "reload",
+  yy: "copyCurrentUrl",
+  p: "openCopiedUrlInCurrentTab",
+  P: "openCopiedUrlInNewTab",
+  gi: "focusInput",
   "[[": "goPrevious",
   "]]": "goNext",
-  "gf": "nextFrame",
-  "gF": "mainFrame",
-  "gu": "goUp",
-  "gU": "goToRoot",
-  "i": "enterInsertMode",
-  "v": "enterVisualMode",
-  "V": "enterVisualLineMode",
+  gf: "nextFrame",
+  gF: "mainFrame",
+  gu: "goUp",
+  gU: "goToRoot",
+  i: "enterInsertMode",
+  v: "enterVisualMode",
+  V: "enterVisualLineMode",
 
   // Link hints
-  "f": "LinkHints.activateMode",
-  "F": "LinkHints.activateModeToOpenInNewTab",
+  f: "LinkHints.activateMode",
+  F: "LinkHints.activateModeToOpenInNewTab",
   "<a-f>": "LinkHints.activateModeWithQueue",
-  "yf": "LinkHints.activateModeToCopyLinkUrl",
+  yf: "LinkHints.activateModeToCopyLinkUrl",
 
   // Using find
   "/": "enterFindMode",
-  "n": "performFind",
-  "N": "performBackwardsFind",
+  n: "performFind",
+  N: "performBackwardsFind",
 
   // Vomnibar
-  "o": "Vomnibar.activate",
-  "O": "Vomnibar.activateInNewTab",
-  "T": "Vomnibar.activateTabSelection",
-  "b": "Vomnibar.activateBookmarks",
-  "B": "Vomnibar.activateBookmarksInNewTab",
-  "ge": "Vomnibar.activateEditUrl",
-  "gE": "Vomnibar.activateEditUrlInNewTab",
+  o: "Vomnibar.activate",
+  O: "Vomnibar.activateInNewTab",
+  T: "Vomnibar.activateTabSelection",
+  b: "Vomnibar.activateBookmarks",
+  B: "Vomnibar.activateBookmarksInNewTab",
+  ge: "Vomnibar.activateEditUrl",
+  gE: "Vomnibar.activateEditUrlInNewTab",
 
   // Navigating history
-  "H": "goBack",
-  "L": "goForward",
+  H: "goBack",
+  L: "goForward",
 
   // Manipulating tabs
-  "K": "nextTab",
-  "J": "previousTab",
-  "gt": "nextTab",
-  "gT": "previousTab",
+  K: "nextTab",
+  J: "previousTab",
+  gt: "nextTab",
+  gT: "previousTab",
   "^": "visitPreviousTab",
   "<<": "moveTabLeft",
   ">>": "moveTabRight",
-  "g0": "firstTab",
-  "g$": "lastTab",
-  "W": "moveTabToNewWindow",
-  "t": "createTab",
-  "yt": "duplicateTab",
-  "x": "removeTab",
-  "X": "restoreTab",
+  g0: "firstTab",
+  g$: "lastTab",
+  W: "moveTabToNewWindow",
+  t: "createTab",
+  yt: "duplicateTab",
+  x: "removeTab",
+  X: "restoreTab",
   "<a-p>": "togglePinTab",
   "<a-m>": "toggleMuteTab",
 
   // Marks
-  "m": "Marks.activateCreateMode",
+  m: "Marks.activateCreateMode",
   "`": "Marks.activateGotoMode",
 
   // Misc
   "?": "showHelp",
-  "gs": "toggleViewSource",
+  gs: "toggleViewSource",
+
+  // Layers
+  a: "Layer.activate",
 };
 
 // This is a mapping of: commandIdentifier => [description, options].
@@ -412,8 +432,14 @@ const commandDescriptions = {
   toggleViewSource: ["View page source", { noRepeat: true }],
 
   copyCurrentUrl: ["Copy the current URL to the clipboard", { noRepeat: true }],
-  openCopiedUrlInCurrentTab: ["Open the clipboard's URL in the current tab", { noRepeat: true }],
-  openCopiedUrlInNewTab: ["Open the clipboard's URL in a new tab", { repeatLimit: 20 }],
+  openCopiedUrlInCurrentTab: [
+    "Open the clipboard's URL in the current tab",
+    { noRepeat: true },
+  ],
+  openCopiedUrlInNewTab: [
+    "Open the clipboard's URL in a new tab",
+    { repeatLimit: 20 },
+  ],
 
   enterInsertMode: ["Enter insert mode", { noRepeat: true }],
   passNextKey: ["Pass the next key to the page"],
@@ -424,8 +450,13 @@ const commandDescriptions = {
 
   "LinkHints.activateMode": ["Open a link in the current tab"],
   "LinkHints.activateModeToOpenInNewTab": ["Open a link in a new tab"],
-  "LinkHints.activateModeToOpenInNewForegroundTab": ["Open a link in a new tab & switch to it"],
-  "LinkHints.activateModeWithQueue": ["Open multiple links in a new tab", { noRepeat: true }],
+  "LinkHints.activateModeToOpenInNewForegroundTab": [
+    "Open a link in a new tab & switch to it",
+  ],
+  "LinkHints.activateModeWithQueue": [
+    "Open multiple links in a new tab",
+    { noRepeat: true },
+  ],
   "LinkHints.activateModeToOpenIncognito": ["Open a link in incognito window"],
   "LinkHints.activateModeToDownloadLink": ["Download link url"],
   "LinkHints.activateModeToCopyLinkUrl": ["Copy a link URL to the clipboard"],
@@ -453,41 +484,80 @@ const commandDescriptions = {
   lastTab: ["Go to the last tab", { background: true }],
 
   createTab: ["Create new tab", { background: true, repeatLimit: 20 }],
-  duplicateTab: ["Duplicate current tab", { background: true, repeatLimit: 20 }],
-  removeTab: ["Close current tab", {
-    background: true,
-    repeatLimit: (chrome.sessions ? chrome.sessions.MAX_SESSION_RESULTS : null) || 25,
-  }],
+  duplicateTab: [
+    "Duplicate current tab",
+    { background: true, repeatLimit: 20 },
+  ],
+  removeTab: [
+    "Close current tab",
+    {
+      background: true,
+      repeatLimit:
+        (chrome.sessions ? chrome.sessions.MAX_SESSION_RESULTS : null) || 25,
+    },
+  ],
   restoreTab: ["Restore closed tab", { background: true, repeatLimit: 20 }],
 
   moveTabToNewWindow: ["Move tab to new window", { background: true }],
   togglePinTab: ["Pin or unpin current tab", { background: true }],
-  toggleMuteTab: ["Mute or unmute current tab", { background: true, noRepeat: true }],
+  toggleMuteTab: [
+    "Mute or unmute current tab",
+    { background: true, noRepeat: true },
+  ],
 
-  closeTabsOnLeft: ["Close tabs on the left", { background: true, noRepeat: true }],
-  closeTabsOnRight: ["Close tabs on the right", { background: true, noRepeat: true }],
-  closeOtherTabs: ["Close all other tabs", { background: true, noRepeat: true }],
+  closeTabsOnLeft: [
+    "Close tabs on the left",
+    { background: true, noRepeat: true },
+  ],
+  closeTabsOnRight: [
+    "Close tabs on the right",
+    { background: true, noRepeat: true },
+  ],
+  closeOtherTabs: [
+    "Close all other tabs",
+    { background: true, noRepeat: true },
+  ],
 
   moveTabLeft: ["Move tab to the left", { background: true }],
   moveTabRight: ["Move tab to the right", { background: true }],
 
-  "Vomnibar.activate": ["Open URL, bookmark or history entry", { topFrame: true }],
-  "Vomnibar.activateInNewTab": ["Open URL, bookmark or history entry in a new tab", {
-    topFrame: true,
-  }],
-  "Vomnibar.activateTabSelection": ["Search through your open tabs", { topFrame: true }],
+  "Vomnibar.activate": [
+    "Open URL, bookmark or history entry",
+    { topFrame: true },
+  ],
+  "Vomnibar.activateInNewTab": [
+    "Open URL, bookmark or history entry in a new tab",
+    {
+      topFrame: true,
+    },
+  ],
+  "Vomnibar.activateTabSelection": [
+    "Search through your open tabs",
+    { topFrame: true },
+  ],
   "Vomnibar.activateBookmarks": ["Open a bookmark", { topFrame: true }],
-  "Vomnibar.activateBookmarksInNewTab": ["Open a bookmark in a new tab", { topFrame: true }],
+  "Vomnibar.activateBookmarksInNewTab": [
+    "Open a bookmark in a new tab",
+    { topFrame: true },
+  ],
   "Vomnibar.activateEditUrl": ["Edit the current URL", { topFrame: true }],
-  "Vomnibar.activateEditUrlInNewTab": ["Edit the current URL and open in a new tab", {
-    topFrame: true,
-  }],
+  "Vomnibar.activateEditUrlInNewTab": [
+    "Edit the current URL and open in a new tab",
+    {
+      topFrame: true,
+    },
+  ],
 
   nextFrame: ["Select the next frame on the page", { background: true }],
-  mainFrame: ["Select the page's main/top frame", { topFrame: true, noRepeat: true }],
+  mainFrame: [
+    "Select the page's main/top frame",
+    { topFrame: true, noRepeat: true },
+  ],
 
   "Marks.activateCreateMode": ["Create a new mark", { noRepeat: true }],
   "Marks.activateGotoMode": ["Go to a mark", { noRepeat: true }],
+
+  "Layer.activate": ["Insert concept layers", { noRepeat: true }],
 };
 
 globalThis.Commands = Commands;
